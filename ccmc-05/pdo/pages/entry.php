@@ -1,5 +1,35 @@
 <?php
 
+require_once("../database.php");
+require_once("../classes.php");
+
+//データベース取得
+$pdo = connectDatabase();
+
+//実行するSQLを設定
+$sql = "select * from areas";
+
+//SQL実行オブジェクトを取得
+$pstmt = $pdo->prepare($sql);
+
+//SQL実行
+$pstmt->execute();
+
+//結果セットを取得
+$rs = $pstmt->fetchAll();
+
+//データベース接続オブジェクトの廃棄
+disconnectDatabase($pdo);
+
+//結果リセットを配列に格納
+$areas = [];
+foreach ($rs as $record){
+    $id  = intval($record["id"]);
+    $name = $record["name"];
+    $area = new Area($id, $name);
+    $areas[] = $area;
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="ja">
@@ -10,12 +40,12 @@
 	<body>
 		<h1>PDOを使ってみる</h1>
 		<h2>地域を選択する</h2>
-		<form action="restaurants.html" method="get">
+		<form action="restaurants.php" method="get">
 		<select name="area">
 			<option value="0">-- 選択してください --</option>
-			<option value="1">福岡</option>
-			<option value="2">神戸</option>
-			<option value="3">伊豆</option>
+			<?php foreach ($areas as $area) { ?>
+			<option value="<?= $area->getId() ?>"><?= $area->getName()?></option>
+			<?php } ?>
 		</select>
 		<input type="submit" value="選択" />
 		</form>
